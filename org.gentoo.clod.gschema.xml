@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schemalist>
+  <schema id="org.gentoo.clod.keybindings" path="/org/gentoo/clod/keybindings/">
+    
+    <key name="key-next-page" type="s">
+      <default>'Right'</default>
+      <summary>Next Page</summary>
+      <description>Keybinding to advance to the next page or archive entry.</description>
+    </key>
+
+    <key name="key-prev-page" type="s">
+      <default>'Left'</default>
+      <summary>Previous Page</summary>
+      <description>Keybinding to return to the previous page or archive entry.</description>
+    </key>
+
+    <key name="key-toggle-menu" type="s">
+      <default>'&lt;Primary&gt;m'</default>
+      <summary>Toggle Menu</summary>
+      <description>Keybinding to show or hide the main menu bar (Ctrl+M).</description>
+    </key>
+
+  </schema>
+</schemalist>

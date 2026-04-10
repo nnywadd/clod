@@ -1,0 +1,36 @@
+// src/clod.h
+#ifndef CLOD_H
+#define CLOD_H
+
+#include <gtk/gtk.h>
+
+typedef struct {
+    GtkWidget *window;
+    GtkWidget *drawing_area;
+    GtkWidget *menu_bar;
+    
+    // Comic State
+    char *current_archive;
+    GList *pages;          // List of string filenames inside the archive
+    int current_page_idx;
+    GdkPixbuf *current_pixbuf;
+    
+    // View State
+    gboolean manga_mode;
+    gboolean double_page;
+    
+    // Magnifier State
+    gboolean magnifier_active;
+    double mag_x;
+    double mag_y;
+} ClodReader;
+
+// Shared Functions
+void load_comic_page(ClodReader *reader);
+void setup_keybindings(GtkApplication *app, ClodReader *reader);
+
+// Archive Functions
+GList* clod_get_archive_pages(const char *archive_path);
+GdkPixbuf* clod_extract_page(const char *archive_path, const char *page_name);
+
+#endif // CLOD_H
