@@ -31,6 +31,8 @@ typedef struct {
     gboolean magnifier_active;
     double mag_x;
     double mag_y;
+    double pan_x;
+    double pan_y;
 } ClodTab;
 
 typedef struct {
@@ -44,7 +46,7 @@ typedef struct {
 // Core Functions
 void clod_open_file(ClodApp *app, const char *filepath);
 void clod_tab_load_page(ClodTab *tab);
-
+gboolean clod_handle_scroll(ClodApp *app, double dy);
 // Archive Handlers
 GList* clod_get_archive_pages(const char *archive_path);
 GdkPixbuf* clod_extract_page(const char *archive_path, const char *page_name);

@@ -52,11 +52,9 @@ static void draw_page_cb(GtkDrawingArea *area, cairo_t *cr, int width, int heigh
     double scale = MIN((double)width / img_w, (double)height / img_h) * tab->zoom_level; 
     double offset_x = (width - (img_w * scale)) / 2.0;
     double offset_y = (height - (img_h * scale)) / 2.0;
-
     cairo_save(cr);
-    cairo_translate(cr, offset_x, offset_y);
+    cairo_translate(cr, offset_x + tab->pan_x, offset_y + tab->pan_y);
     cairo_scale(cr, scale, scale);
-
     if (!tab->is_pdf) {
         gdk_cairo_set_source_pixbuf(cr, tab->current_pixbuf, 0, 0);
         cairo_paint(cr); 
@@ -93,6 +91,8 @@ static void draw_page_cb(GtkDrawingArea *area, cairo_t *cr, int width, int heigh
 
 // --- TAB STATE MANAGEMENT ---
 void clod_tab_load_page(ClodTab *tab) {
+    tab->pan_x = 0;
+    tab->pan_y = 0;
     if (tab->is_pdf) {
 #ifdef WITH_PDF
         if (tab->pdf_page) g_object_unref(tab->pdf_page);
@@ -145,7 +145,13 @@ static void on_tab_click_pressed(GtkGestureClick *gesture, int n_press, double x
         gtk_popover_popup(GTK_POPOVER(tab->context_menu));
     }
 }
-
+static gboolean on_tab_scroll(GtkEventControllerScroll *controller,
+                              double dx, double dy, gpointer data) {
+    (void)controller; (void)dx;
+    ClodTab *tab = (ClodTab *)data;
+    ClodApp *app = g_object_get_data(G_OBJECT(tab->drawing_area), "clod-app");
+    return clod_handle_scroll(app, dy);
+}
 void clod_open_file(ClodApp *app, const char *filepath) {
     ClodTab *tab = g_new0(ClodTab, 1);
     tab->archive_path = g_strdup(filepath);
@@ -186,7 +192,12 @@ void clod_open_file(ClodApp *app, const char *filepath) {
     GtkEventController *motion_cont = gtk_event_controller_motion_new();
     g_signal_connect(motion_cont, "motion", G_CALLBACK(on_tab_motion), tab);
     gtk_widget_add_controller(tab->drawing_area, motion_cont);
-
+    // Wire up smart scroll (pan when zoomed, page-turn when fit)
+    g_object_set_data(G_OBJECT(tab->drawing_area), "clod-app", app);
+    GtkEventController *scroll_cont =
+        gtk_event_controller_scroll_new(GTK_EVENT_CONTROLLER_SCROLL_VERTICAL);
+    g_signal_connect(scroll_cont, "scroll", G_CALLBACK(on_tab_scroll), tab);
+    gtk_widget_add_controller(tab->drawing_area, scroll_cont);
     // Wire up clicks
     GtkGesture *click_gesture = gtk_gesture_click_new();
     gtk_gesture_single_set_button(GTK_GESTURE_SINGLE(click_gesture), 0); // Listen to ALL buttons (Left & Right)
